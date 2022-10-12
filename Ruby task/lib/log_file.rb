@@ -1,42 +1,36 @@
 # frozen_string_literal: true
 
-require_relative 'storage'
+require 'pry'
 
 class LogFile
-  attr_reader :path, :log_visits
-
-  def initialize(path)
+  def initialize(path, storage)
     @path = path
-    @log_visits = []
+    @storage = storage
   end
 
   def parse_file
-    file_exists
+    file_exists?
 
     File.read(path).each_line do |line|
       url, ip = line.split
-      ip_match(ip)
-      @log_visits << Storage.new(url: url, ip_address: ip)
+      ip_valid?(ip)
+      storage.insert(url, ip, line)
     end
-  end
-
-  def visits_by_urls
-    @visits_by_urls ||= log_visits.group_by(&:url)
+    storage.get_helper.uniq.each do |line|
+      storage.insert_unique(line)
+    end
+    storage
   end
 
   private
 
-  def file_exists
-    unless File.file?(path)
-      puts 'File doesn\'t exists'
-      exit 1
-    end
+  attr_reader :path, :storage
+
+  def file_exists?
+    raise StandardError, 'File does not exist' unless File.file?(path)
   end
 
-  def ip_match(ip)
-    return true if ip.match?(/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/)
-
-    puts 'Insufficient permission, wrong IP format'
-    exit 1
+  def ip_valid?(ip)
+    raise StandardError, 'Wrong IP format' unless ip.match?(/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/)
   end
 end

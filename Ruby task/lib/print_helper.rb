@@ -1,28 +1,35 @@
 # frozen_string_literal: true
 
+require 'pry'
+
 class PrintHelper
-  def display_url_counts(hash)
-    hash.each do |key, value|
-     # puts hash.map { |k, v| "#{v} #{k}" }.join(", ")
-      display_en(key, value)
-    end
+  def initialize(storage)
+    @storage = storage
   end
 
-  def display_url_counts_with_uniq_ip(hash)
-    hash.each do |key, value|
-      #puts "#{key}:#{value}"
-      # puts hash.map { |k, v| "#{v} #{k}" }.join(", ")
-      display_u_en(key, value)
-    end
+  def display_visits
+    is_empty?(storage.get_total_visits)
+    display_en(storage.get_total_visits)
+
+    is_empty?(storage.get_total_unique_visits)
+    display_unique_en(storage.get_total_unique_visits)
   end
 
   private
 
-  def display_en(key, value)
-    puts "#{key} #{value} visits\n"
+  attr_reader :storage
+
+  def is_empty?(visits)
+    raise StandardError, 'Empty hash.' if visits.empty?
   end
 
-  def display_u_en(key, value)
-    puts "#{key} #{value} unique visits\n"
+  def display_en(visits)
+    puts visits.map { |k, v| "#{k} #{v} visits" }.join("\n")
+    puts
+  end
+
+  def display_unique_en(_visits)
+    puts _visits.map { |k, v| "#{k} #{v} unique visits" }.join("\n")
+    puts
   end
 end
